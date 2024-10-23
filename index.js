@@ -1,8 +1,17 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
 
 //para hacer uso de post necesitamos json-parser de express
 app.use(express.json())
+
+// Configuración de Morgan para registrar solicitudes en modo tiny y mostrar el cuerpo de los POST
+morgan.token('body', (req, res) => {
+  return req.method === 'POST' ? JSON.stringify(req.body) : ''
+});
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
+
 
 let persons = [
     { 
@@ -102,6 +111,12 @@ app.post('/api/persons', (request, response) => {
     response.json(person)
     
 })
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
 
 
 const PORT = 3001;
